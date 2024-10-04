@@ -185,11 +185,6 @@ def export_move(exportfolder_path, team_id, team_name):
                 # Replace the dummy team ID with the actual one in any kit-dependent textures found
                 textures_id_change(subfolder_path, team_id)
 
-                # Delete the destination folder if already present
-                subfolder_destination_path = os.path.join(main_itemfolder_path, subfolder_id_withname)
-                if os.path.exists(subfolder_destination_path):
-                    shutil.rmtree(subfolder_destination_path)
-
             # Fill up to 35 slots by randomly copying existing folders and do it again
             for _ in range(max_referees - len(subfolder_list)):
                 folder_to_replicate = random.choice(subfolder_list)
@@ -234,11 +229,6 @@ def export_move(exportfolder_path, team_id, team_name):
 
                 # Replace the dummy team ID with the actual one in any kit-dependent textures found
                 textures_id_change(subfolder_path, team_id)
-
-                # Delete the destination folder if already present
-                subfolder_destination_path = os.path.join(main_itemfolder_path, subfolder_id_withname)
-                if os.path.exists(subfolder_destination_path):
-                    shutil.rmtree(subfolder_destination_path)
 
             # Now move the newly created folders to the main folder
             for index in range(1, max_referees + 1):

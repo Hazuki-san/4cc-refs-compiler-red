@@ -38,11 +38,9 @@ def team_id_get(exportfolder_path, team_name_folder: str, team_id_min, team_id_m
         os.path.exists(f"{exportfolder_path}/Faces"),
         os.path.exists(f"{exportfolder_path}/Kit Configs"),
         os.path.exists(f"{exportfolder_path}/Kit Textures"),
-        os.path.exists(f"{exportfolder_path}/Portraits"),
         os.path.exists(f"{exportfolder_path}/Boots"),
         os.path.exists(f"{exportfolder_path}/Gloves"),
         os.path.exists(f"{exportfolder_path}/Collars"),
-        os.path.exists(f"{exportfolder_path}/Logo"),
         os.path.exists(f"{exportfolder_path}/Common"),
         os.path.exists(f"{exportfolder_path}/Other")
     ]):
@@ -59,11 +57,9 @@ def team_id_get(exportfolder_path, team_name_folder: str, team_id_min, team_id_m
                 os.path.exists(f"{exportfolder_path}/{foldername_test}/Faces"),
                 os.path.exists(f"{exportfolder_path}/{foldername_test}/Kit Configs"),
                 os.path.exists(f"{exportfolder_path}/{foldername_test}/Kit Textures"),
-                os.path.exists(f"{exportfolder_path}/{foldername_test}/Portraits"),
                 os.path.exists(f"{exportfolder_path}/{foldername_test}/Boots"),
                 os.path.exists(f"{exportfolder_path}/{foldername_test}/Gloves"),
                 os.path.exists(f"{exportfolder_path}/{foldername_test}/Collars"),
-                os.path.exists(f"{exportfolder_path}/{foldername_test}/Logo"),
                 os.path.exists(f"{exportfolder_path}/{foldername_test}/Common"),
                 os.path.exists(f"{exportfolder_path}/{foldername_test}/Other")
             ]):

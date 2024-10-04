@@ -87,7 +87,6 @@ def faces_check(exportfolder_path, team_name, team_id):
     ]
 
     folder_error_any = None
-    player_num_list = []
 
     # Prepare a list of subfolders
     subfolder_list = [subfolder for subfolder in os.listdir(itemfolder_path) if os.path.isdir(os.path.join(itemfolder_path, subfolder))]
@@ -98,24 +97,12 @@ def faces_check(exportfolder_path, team_name, team_id):
         subfolder_path = os.path.join(itemfolder_path, subfolder_name)
 
         # Initialize error subflags
-        folder_error_num_bad = False
-        folder_error_num_repeated = False
         folder_error_edithairxml = False
         folder_error_hairxml = False
         folder_error_xml_format = False
         folder_error_tex_format = False
         folder_error_mtl_format = False
         folder_error_file_unrecognized_list = []
-
-        # Check that the player number is within the 01-23 range
-        player_num = int(subfolder_name[3:5])
-        folder_error_num_bad = not (subfolder_name[3:5].isdigit() and 1 <= player_num <= 23)
-
-        # Check if the player number is already in the list
-        if player_num in player_num_list:
-            folder_error_num_repeated = True
-
-        player_num_list.append(player_num)
 
         if not fox_mode:
             # Check if the folder has a face.xml or the unsupported face_edithair.xml and hair.xml
@@ -167,8 +154,6 @@ def faces_check(exportfolder_path, team_name, team_id):
 
         # Set the main flag if any of the checks failed
         folder_error = (
-            folder_error_num_bad or
-            folder_error_num_repeated or
             folder_error_edithairxml or
             folder_error_hairxml or
             folder_error_xml_format or
@@ -189,10 +174,6 @@ def faces_check(exportfolder_path, team_name, team_id):
             logging.error(f"- Face folder:    {subfolder_name}")
 
             # Give an error depending on the particular problem
-            if folder_error_num_bad:
-                logging.error(f"- (player number {subfolder_name[3:5]} outside the 01-23 range)")
-            if folder_error_num_repeated:
-                logging.error(f"- (player number {subfolder_name[3:5]} already in use)")
             if folder_error_xml_format:
                 logging.error( "- (broken xml file)")
             if folder_error_edithairxml:
@@ -379,127 +360,6 @@ def kittextures_check(exportfolder_path, team_name):
     if file_error_any:
 
         logging.error( "- The kit textures mentioned above will be discarded since they're unusable")
-
-        if pause_on_error:
-            print("-")
-            pause()
-
-
-# If a Logo folder exists and is not empty, check that the three logo images' filenames are correct
-def logo_check(exportfolder_path, team_name):
-    itemfolder_path = os.path.join(exportfolder_path, "Logo")
-
-    # Check if the folder exists
-    if not os.path.isdir(itemfolder_path):
-        return
-
-    # If the folder is empty, delete it
-    if not os.listdir(itemfolder_path):
-        shutil.rmtree(itemfolder_path)
-        return
-
-    # Initialize the variables
-    file_error = False
-    file_count = 0
-    file_good_count = 0
-
-    # For every image
-    for file_name in os.listdir(itemfolder_path):
-
-        # Check that its name starts with emblem_
-        file_error = not file_name.lower().startswith("emblem_")
-
-        # Check the suffix and increase the plus counter if present and correct
-        if (file_name.lower().endswith(("_r.png", "_r_l.png", "_r_ll.png"))):
-            file_good_count += 1
-
-        file_count += 1
-
-        if file_error:
-            break
-
-    # Check that there are three total images and they all have the correct suffix
-    if (file_count != 3) or (file_good_count != 3):
-        file_error = True
-
-    # If something's wrong
-    if file_error:
-
-        # Skip the whole folder
-        shutil.rmtree(itemfolder_path)
-
-        # Log the issue
-        logging.error( "-")
-        logging.error( "- ERROR - Wrong logo filenames")
-        logging.error(f"- Team name:      {team_name}")
-        logging.error( "- The Logo folder will be discarded since it's unusable")
-
-        if pause_on_error:
-            print("-")
-            pause()
-
-
-# If a Portraits folder exists and is not empty, check that the portraits' filenames are correct
-def portraits_check(exportfolder_path, team_name):
-    itemfolder_path = os.path.join(exportfolder_path, "Portraits")
-
-    # Check if the folder exists
-    if not os.path.isdir(itemfolder_path):
-        return
-
-    # If the folder is empty, delete it
-    if not os.listdir(itemfolder_path):
-        shutil.rmtree(itemfolder_path)
-        return
-
-    file_error_any = False
-
-    for file_name in os.listdir(itemfolder_path):
-
-        file_error = False
-        file_error_prefix = True
-        file_error_id = True
-
-        # Check that the player number starts with "player_" and is within the 01-23 range
-        file_error_prefix = not (file_name[:7] == "player_")
-        file_error_id = not (file_name[-6:-4].isdigit() and '01' <= file_name[-6:-4] <= '23')
-
-        # Check that the texture is proper
-        file_path = os.path.join(itemfolder_path, file_name)
-        file_error_tex_format = texture_check(file_path)
-
-        # Set the main flag if any of the checks failed
-        file_error = (
-            file_error_prefix or
-            file_error_id or
-            file_error_tex_format
-        )
-
-        # If the file is bad
-        if file_error:
-            if not file_error_any:
-                file_error_any = True
-                logging.error( "-")
-                logging.error( "- ERROR - Bad portrait")
-                logging.error(f"- Team name:      {team_name}")
-
-            # Give an error depending on the particular problem
-            logging.error(f"- Portrait name:  {file_name} ")
-
-            if file_error_prefix:
-                logging.error( "- (incorrect prefix, should be \"player_\")")
-            if file_error_id:
-                logging.error(f"- (player number {file_name[-6:-4]} out of the 01-23 range)")
-            if file_error_tex_format:
-                logging.error( "- (bad format)")
-
-            # And skip it
-            os.remove(os.path.join(itemfolder_path, file_name))
-
-    # If the team has bad files close the previously opened message
-    if file_error_any:
-
-        logging.error( "- These portraits will be discarded since they're unusable")
 
         if pause_on_error:
             print("-")
@@ -886,8 +746,6 @@ def export_check(exportfolder_path, team_name, team_id):
     faces_check(exportfolder_path, team_name, team_id)
     kitconfigs_check(exportfolder_path, team_name)
     kittextures_check(exportfolder_path, team_name)
-    logo_check(exportfolder_path, team_name)
-    portraits_check(exportfolder_path, team_name)
     common_check(exportfolder_path, team_name)
     boots_check(exportfolder_path, team_name, team_id)
     gloves_check(exportfolder_path, team_name, team_id)

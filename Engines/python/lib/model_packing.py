@@ -37,16 +37,17 @@ def models_pack(models_type, models_source_path, models_destination_folder, cpk_
         # For every folder in the source directory
         for model_name in os.listdir(models_source_path):
 
-            model_id = model_name[:5]
+            model_id = model_name
             print(f"- {model_name}")
 
-            model_path = os.path.join(models_source_path, model_name)
-            model_path_nameless = os.path.join(models_source_path, model_id)
-
-            # Rename it with the proper id
-            os.rename(model_path, model_path_nameless)
-
             if models_type == "face":
+                model_id = model_name[:10] #refereeXXX
+
+                model_path = os.path.join(models_source_path, model_name)
+                model_path_nameless = os.path.join(models_source_path, model_id)
+
+                # Rename it with the proper id
+                os.rename(model_path, model_path_nameless)
 
                 # Make a properly structured temp folder
                 temp_path = os.path.join(temp_folder_path, model_id, "common", "character0", "model", "character", "face", "real")
@@ -61,6 +62,14 @@ def models_pack(models_type, models_source_path, models_destination_folder, cpk_
                 cpktool.main(cpk_destination, [cpk_source], True)
 
             else:
+                model_id = model_name[:5] #everything else
+
+                model_path = os.path.join(models_source_path, model_name)
+                model_path_nameless = os.path.join(models_source_path, model_id)
+
+                # Rename it with the proper id
+                os.rename(model_path, model_path_nameless)
+
                 # Delete the old folder if present
                 model_destination_path = os.path.join(models_destination_path, model_id)
                 if os.path.exists(model_destination_path):

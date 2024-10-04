@@ -74,9 +74,9 @@ def extracted_from_exports():
         shutil.rmtree(main_destination_path)
     os.makedirs(main_destination_path)
 
-    # Define the minimum and maximum team ids
-    team_id_min = 701
-    team_id_max = 920
+    # Define the minimum and maximum team ids (999 = referees)
+    team_id_min = 999
+    team_id_max = 999
 
     # Reset the notes compilation
     with open(TEAMNOTES_PATH, "w") as f:
@@ -145,16 +145,6 @@ def extracted_from_exports():
         # If the teamID was not found, proceed to the next export
         if not team_id:
             continue
-
-        # If the export has a Faces folder
-        if os.path.exists(os.path.join(export_destination_path, "Faces")):
-
-            # Move the portraits out of the Faces folder
-            export_deleted = portraits_move(export_destination_path, team_id)
-
-            # If the export was deleted, proceed to the next export
-            if export_deleted:
-                continue
 
         # Check the export for all kinds of errors
         if not pass_through:

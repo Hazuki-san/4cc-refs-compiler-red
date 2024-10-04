@@ -2,6 +2,9 @@ import os
 import time
 import shutil
 
+# for random refs
+import random
+
 from .utils.id_change import path_id_change
 from .mtl_id_change import mtl_id_change
 from .fmdl_id_change import fmdl_id_change
@@ -105,8 +108,6 @@ def export_move(exportfolder_path, team_id, team_name):
             "faces",
             "kit configs",
             "kit textures",
-            "logo",
-            "portraits",
             "boots",
             "gloves",
             "collars",
@@ -141,13 +142,21 @@ def export_move(exportfolder_path, team_id, team_name):
             # Prepare a list of subfolders
             subfolder_list = [subfolder for subfolder in os.listdir(team_itemfolder_path) if os.path.isdir(os.path.join(team_itemfolder_path, subfolder))]
 
-            # For each subfolder
-            for subfolder_name in subfolder_list:
+            # Generate unique random numbers for referees
+            max_referees = 35
+            assigned_numbers = random.sample(range(1, max_referees + 1), min(len(subfolder_list), max_referees))
+
+            # For each subfolder, copy the original folders to new random slots
+            for index, subfolder_name in zip(assigned_numbers, subfolder_list):
                 subfolder_path = os.path.join(team_itemfolder_path, subfolder_name)
 
-                # Replace the dummy team ID with the actual one
-                subfolder_id_withname = team_id + subfolder_name[3:]
-                subfolder_id = subfolder_id_withname[:5]
+                # Assign random IDs to each referees
+                new_folder_name = f"referee{index:03d}"
+                new_folder_path = os.path.join(team_itemfolder_path, new_folder_name)
+
+                # Assign existing referees to random IDs
+                shutil.copytree(subfolder_path, new_folder_path)
+                print(f"Assgined {subfolder_name} to {new_folder_name}")
 
                 if fox_mode:
                     # Change the texture IDs inside each fmdl file
@@ -176,22 +185,73 @@ def export_move(exportfolder_path, team_id, team_name):
                 # Replace the dummy team ID with the actual one in any kit-dependent textures found
                 textures_id_change(subfolder_path, team_id)
 
-                # Replace the dummy team ID with the actual one
-                subfolder_path_withname = os.path.join(team_itemfolder_path, subfolder_id_withname)
-                if subfolder_path_withname != subfolder_path:
-                    try:
-                        os.rename(subfolder_path, subfolder_path_withname)
-                    except OSError:
-                        time.sleep(1)
-                        os.rename(subfolder_path, subfolder_path_withname)
+                # Delete the destination folder if already present
+                subfolder_destination_path = os.path.join(main_itemfolder_path, subfolder_id_withname)
+                if os.path.exists(subfolder_destination_path):
+                    shutil.rmtree(subfolder_destination_path)
+
+            # Fill up to 35 slots by randomly copying existing folders and do it again
+            for _ in range(max_referees - len(subfolder_list)):
+                folder_to_replicate = random.choice(subfolder_list)
+
+                # Generate new unique random number for the folder
+                while True:
+                    new_index = random.randint(1, max_referees)  # Get a random number from 1 to 35
+                    new_folder_name = f"referee{new_index:03d}"
+                    new_folder_path = os.path.join(team_itemfolder_path, new_folder_name)
+                    
+                    # Check if the folder already exists
+                    if not os.path.exists(new_folder_path):
+                        break  # Break the loop if a unique name is found
+
+                # Copy the selected folder to the new path
+                shutil.copytree(os.path.join(team_itemfolder_path, folder_to_replicate), new_folder_path)
+                print(f"Assigned {folder_to_replicate} to {new_folder_name}")
+
+                if fox_mode:
+                    # Change the texture IDs inside each fmdl file
+                    for fmdl_file in [f for f in os.listdir(subfolder_path) if f.endswith(".fmdl")]:
+                        fmdl_id_change(os.path.join(subfolder_path, fmdl_file), subfolder_id, team_id)
+
+                    # Convert any dds textures to ftex if needed
+                    ftex_from_dds_multi(subfolder_path)
+
+                    # If the face_diff.bin doesn't exist, copy the template one
+                    face_diff_path = os.path.join(subfolder_path, FACE_DIFF_BIN_NAME)
+                    if not os.path.exists(face_diff_path):
+                        shutil.copyfile(FACE_DIFF_BIN_TEMPLATE_PATH, face_diff_path)
+
+                else:
+                    # Change the texture IDs inside each mtl file
+                    for mtl_file in [f for f in os.listdir(subfolder_path) if f.endswith(".mtl")]:
+                        mtl_id_change(os.path.join(subfolder_path, mtl_file), team_id)
+
+                    # Create the .xml file if needed
+                    object_type = "face"
+                    xml_path = os.path.join(subfolder_path, f"{object_type}.xml")
+                    if not os.path.exists(xml_path):
+                        xml_create(subfolder_path, object_type)
+
+                # Replace the dummy team ID with the actual one in any kit-dependent textures found
+                textures_id_change(subfolder_path, team_id)
 
                 # Delete the destination folder if already present
                 subfolder_destination_path = os.path.join(main_itemfolder_path, subfolder_id_withname)
                 if os.path.exists(subfolder_destination_path):
                     shutil.rmtree(subfolder_destination_path)
 
-                # Move the folder to the main folder
-                shutil.move(os.path.join(team_itemfolder_path, subfolder_id_withname), main_itemfolder_path)
+            # Now move the newly created folders to the main folder
+            for index in range(1, max_referees + 1):
+                new_folder_name = f"referee{index:03d}"
+                subfolder_source_path = os.path.join(team_itemfolder_path, new_folder_name)
+                subfolder_destination_path = os.path.join(main_itemfolder_path, new_folder_name)
+
+                if os.path.exists(subfolder_source_path):
+                    if os.path.exists(subfolder_destination_path):
+                        shutil.rmtree(subfolder_destination_path)  # Delete if it exists to avoid conflicts
+
+                    # Move the folder to the main path
+                    shutil.move(subfolder_source_path, subfolder_destination_path)
 
         # Kit Configs folder
         if team_itemfolder_name.lower() == "kit configs":
@@ -260,59 +320,6 @@ def export_move(exportfolder_path, team_id, team_name):
 
                 # Replace the dummy team ID with the actual one
                 file_name_new = f"u0{team_id}{file_name[5:]}"
-                file_path_new = f'{team_itemfolder_path}/{file_name_new}'
-                os.rename(file_path, file_path_new)
-
-                # Delete the destination file if already present
-                file_destination_path = os.path.join(main_itemfolder_path, file_name_new)
-                if os.path.exists(file_destination_path):
-                    os.remove(file_destination_path)
-
-                # Move the file to the main folder
-                shutil.move(file_path_new, main_itemfolder_path)
-
-        # Logo folder
-        if team_itemfolder_name.lower() == "logo":
-
-            # For every file
-            for file_name in os.listdir(team_itemfolder_path):
-                file_path = os.path.join(team_itemfolder_path, file_name)
-
-                # Replace the dummy team ID with the actual one
-                if fox_21:
-                    file_name_new = f"e_000{team_id}{file_name[11:]}"
-                else:
-                    file_name_new = f"emblem_0{team_id}{file_name[11:]}"
-
-                file_path_new = f'{team_itemfolder_path}/{file_name_new}'
-                os.rename(file_path, file_path_new)
-
-                # Delete the destination file if already present
-                file_destination_path = os.path.join(main_itemfolder_path, file_name_new)
-                if os.path.exists(file_destination_path):
-                    os.remove(file_destination_path)
-
-                # Move the file to the main folder
-                shutil.move(file_path_new, main_itemfolder_path)
-
-        # Portraits folder
-        if team_itemfolder_name.lower() == "portraits":
-
-            # For every file
-            for file_name in os.listdir(team_itemfolder_path):
-                file_path = os.path.join(team_itemfolder_path, file_name)
-
-                # Replace the dummy team ID with the actual one
-                if file_name.startswith("player_"):
-                    player_id = file_name[-6:-4]
-                else:
-                    player_id = file_name[3:5]
-
-                if fox_19:
-                    file_name_new = f"{team_id}{player_id}.dds"
-                else:
-                    file_name_new = f"player_{team_id}{player_id}.dds"
-
                 file_path_new = f'{team_itemfolder_path}/{file_name_new}'
                 os.rename(file_path, file_path_new)
 
@@ -467,7 +474,7 @@ def export_move(exportfolder_path, team_id, team_name):
         # Look for them
         for team_itemfolder_name in os.listdir(exportfolder_path):
 
-            if team_itemfolder_name.lower() not in ["faces", "kit configs", "kit textures", "logo", "portraits", "boots", "gloves", "common", "other"]:
+            if team_itemfolder_name.lower() not in ["faces", "kit configs", "kit textures", "boots", "gloves", "common", "other"]:
 
                 # First check that it isn't empty
                 team_itemfolder_path = os.path.join(exportfolder_path, team_itemfolder_name)

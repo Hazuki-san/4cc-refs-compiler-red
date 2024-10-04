@@ -54,107 +54,85 @@ def contents_from_extracted():
     print("-")
 
 
-    # If Bins Updating is enabled and there's an "extracted" folder
-    if bins_updating and os.path.exists(EXTRACTED_PATH):
+    # Put RefAppearance in CPK no matter what
+    if not fox_mode and os.path.exists("extracted_exports"):
 
         print("-")
-        print("- Bins Updating is enabled")
+        print("- Injecting 4cc referees files (pre-fox)")
         print("-")
 
         # Set the paths
-        COMMON_ETC_PATH = "common/etc"
-        UNIFORM_TEAM_PATH = "common/character0/model/character/uniform/team"
-
-        PATCH_BINS_PATH = os.path.join(PATCHES_CONTENTS_PATH, bins_foldername)
-        PATCH_BINS_COMMON_ETC_PATH = os.path.join(PATCH_BINS_PATH, COMMON_ETC_PATH)
-        PATCH_BINS_UNIFORM_TEAM_PATH = os.path.join(PATCH_BINS_PATH, UNIFORM_TEAM_PATH)
+        common_root_path = os.path.join(PATCHES_CONTENTS_PATH, bins_foldername, "common")
+        refappearance_path = os.path.join(common_root_path, "character0", "model", "character", "appearance")
+        refs_uniform_path = os.path.join(common_root_path, "character0", "model", "character", "uniform", "team", "referee")
+        refs_clothes_path = os.path.join(common_root_path, "character0", "model", "character", "uniform", "nocloth")
+        ng_socks_fix_path = os.path.join(common_root_path, "character1", "model", "character", "uniform", "nocloth")
 
         # Prepare a list of sources and destination paths for the bin files
-        BINS_TEMP_FOLDER_PATH = os.path.join(BIN_FOLDER_PATH, "temp")
-        TEAMCOLOR_BIN_TEMP_PATH = os.path.join(BINS_TEMP_FOLDER_PATH, TEAMCOLOR_BIN_NAME)
-        UNICOLOR_BIN_TEMP_PATH = os.path.join(BINS_TEMP_FOLDER_PATH, UNICOLOR_BIN_NAME)
+        bins_folder_path = "Engines/bins/"
 
-        bin_info_list = [
-            {
-                'source_path': f"{COMMON_ETC_PATH}/{TEAMCOLOR_BIN_NAME}",
-                'destination_path': TEAMCOLOR_BIN_TEMP_PATH,
-                'fallback_path': f"{BIN_FOLDER_PATH}/{TEAMCOLOR_BIN_NAME}",
-            },
-            {
-                'source_path': f"{UNIFORM_TEAM_PATH}/{UNICOLOR_BIN_NAME}",
-                'destination_path': UNICOLOR_BIN_TEMP_PATH,
-                'fallback_path': f"{BIN_FOLDER_PATH}/{UNICOLOR_BIN_NAME}",
-            },
-        ]
+        refappearance_bin_path = os.path.join(bins_folder_path, "RefereeAppearance.bin")
 
-        if fox_mode:
-            # Set the filename depending on pes version
-            UNIPARAM_TEMP_NAME = UNIPARAM_19_NAME if fox_19 else UNIPARAM_18_NAME
-            UNIPARAM_BIN_TEMP_PATH = os.path.join(BINS_TEMP_FOLDER_PATH, UNIPARAM_TEMP_NAME)
+        ref_acl_1_path = os.path.join(bins_folder_path, "referee_ACL_1.bin")
+        ref_acl_2_path = os.path.join(bins_folder_path, "referee_ACL_2.bin")
+        ref_acl_3_path = os.path.join(bins_folder_path, "referee_ACL_3.bin")
+        ref_acl_4_path = os.path.join(bins_folder_path, "referee_ACL_4.bin")
+        ref_acl_5_path = os.path.join(bins_folder_path, "referee_ACL_5.bin")
+        ref_cl_1_path = os.path.join(bins_folder_path, "referee_CL_1.bin")
+        ref_cl_2_path = os.path.join(bins_folder_path, "referee_CL_2.bin")
+        ref_cl_3_path = os.path.join(bins_folder_path, "referee_CL_3.bin")
+        ref_cl_4_path = os.path.join(bins_folder_path, "referee_CL_4.bin")
+        ref_def_1_path = os.path.join(bins_folder_path, "referee_DEF_1.bin")
+        ref_def_2_path = os.path.join(bins_folder_path, "referee_DEF_2.bin")
+        ref_def_3_path = os.path.join(bins_folder_path, "referee_DEF_3.bin")
+        ref_def_4_path = os.path.join(bins_folder_path, "referee_DEF_4.bin")
+        ref_def_5_path = os.path.join(bins_folder_path, "referee_DEF_5.bin")
+        ref_lb_1_path = os.path.join(bins_folder_path, "referee_LB_1.bin")
+        ref_lb_2_path = os.path.join(bins_folder_path, "referee_LB_2.bin")
+        ref_lb_3_path = os.path.join(bins_folder_path, "referee_LB_3.bin")
+        ref_sda_1_path = os.path.join(bins_folder_path, "referee_SDA_1.bin")
+        ref_sda_2_path = os.path.join(bins_folder_path, "referee_SDA_2.bin")
+        ref_sda_3_path = os.path.join(bins_folder_path, "referee_SDA_3.bin")
+        
+        ref_collar_model_path = os.path.join(bins_folder_path, "referee_collar_026.model")
+        ref_pants_model_path = os.path.join(bins_folder_path, "referee_pants_016.model")
 
-            bin_info_list.append(
-                {
-                    'source_path': f"{UNIFORM_TEAM_PATH}/{UNIPARAM_NAME}",
-                    'destination_path': UNIPARAM_BIN_TEMP_PATH,
-                    'fallback_path': f"{BIN_FOLDER_PATH}/{UNIPARAM_TEMP_NAME}",
-                }
-            )
+        socks_no_guard_model_path = os.path.join(bins_folder_path, "socks_noguard.model")
 
         # Create the folders
-        os.makedirs(PATCH_BINS_COMMON_ETC_PATH, exist_ok=True)
-        os.makedirs(PATCH_BINS_UNIFORM_TEAM_PATH, exist_ok=True)
-        os.makedirs(BINS_TEMP_FOLDER_PATH, exist_ok=True)
-
-        # Fetch the bin files from the cpks in the download folder and update their values
-        BIN_CPK_NAMES_LIST = ['midcup', 'bins']
-        files_fetch_from_cpks(bin_info_list, BIN_CPK_NAMES_LIST)
-
-        bins_update(TEAMCOLOR_BIN_TEMP_PATH, UNICOLOR_BIN_TEMP_PATH)
+        os.makedirs(refappearance_path, exist_ok=True)
+        os.makedirs(refs_uniform_path, exist_ok=True)
+        os.makedirs(refs_clothes_path, exist_ok=True)
+        os.makedirs(ng_socks_fix_path, exist_ok=True)
 
         # And copy them to the Bins cpk folder
-        shutil.copy(TEAMCOLOR_BIN_TEMP_PATH, PATCH_BINS_COMMON_ETC_PATH)
-        shutil.copy(UNICOLOR_BIN_TEMP_PATH, PATCH_BINS_UNIFORM_TEAM_PATH)
+        shutil.copy(refappearance_bin_path, refappearance_path)
 
-        # If fox mode is enabled and there's a Kit Configs folder
-        itemfolder_path = os.path.join(EXTRACTED_PATH, "Kit Configs")
-        if fox_mode and os.path.exists(itemfolder_path):
+        shutil.copy(ref_acl_1_path, refs_uniform_path)
+        shutil.copy(ref_acl_2_path, refs_uniform_path)
+        shutil.copy(ref_acl_3_path, refs_uniform_path)
+        shutil.copy(ref_acl_4_path, refs_uniform_path)
+        shutil.copy(ref_acl_5_path, refs_uniform_path)
+        shutil.copy(ref_cl_1_path, refs_uniform_path)
+        shutil.copy(ref_cl_2_path, refs_uniform_path)
+        shutil.copy(ref_cl_3_path, refs_uniform_path)
+        shutil.copy(ref_cl_4_path, refs_uniform_path)
+        shutil.copy(ref_def_1_path, refs_uniform_path)
+        shutil.copy(ref_def_2_path, refs_uniform_path)
+        shutil.copy(ref_def_3_path, refs_uniform_path)
+        shutil.copy(ref_def_4_path, refs_uniform_path)
+        shutil.copy(ref_def_5_path, refs_uniform_path)
+        shutil.copy(ref_lb_1_path, refs_uniform_path)
+        shutil.copy(ref_lb_2_path, refs_uniform_path)
+        shutil.copy(ref_lb_3_path, refs_uniform_path)
+        shutil.copy(ref_sda_1_path, refs_uniform_path)
+        shutil.copy(ref_sda_2_path, refs_uniform_path)
+        shutil.copy(ref_sda_3_path, refs_uniform_path)
 
-            print("- \n- Compiling the kit config files into the UniformParameter bin")
+        shutil.copy(ref_collar_model_path, refs_clothes_path)
+        shutil.copy(ref_pants_model_path, refs_clothes_path)
 
-            # Prepare an array with all the kit config files inside each team folder in the Kit Configs folder
-            kit_config_path_list = []
-            for itemfolder_team in [f for f in os.listdir(itemfolder_path)]:
-                itemfolder_team_path = os.path.join(itemfolder_path, itemfolder_team)
-
-                # Add the path of each kit config file to the array
-                for kit_config in [f for f in os.listdir(itemfolder_team_path) if f.endswith(".bin")]:
-                    kit_config_path = os.path.join(itemfolder_team_path, kit_config)
-                    kit_config_path_list.append(kit_config_path)
-
-            # Compile the UniformParameter file
-            uniparam_error = uniparamtool.main(UNIPARAM_BIN_TEMP_PATH, kit_config_path_list, [], UNIPARAM_BIN_TEMP_PATH, True)
-
-            if uniparam_error:
-                logging.critical("-")
-                logging.critical("- FATAL ERROR - Error compiling the UniformParameter file")
-                logging.critical("- The compiler will stop here because the generated cpk would crash PES")
-                logging.critical("- Disable Bins Updating on the settings file and try again")
-                logging.critical("-")
-                logging.critical("- Please report this issue to the developer")
-                logger_stop()
-
-                print("-")
-                pause("Press any key to exit... ")
-
-                exit()
-
-            # Copy the uniparam to the the Bins cpk folder with the proper filename
-            shutil.copy(UNIPARAM_BIN_TEMP_PATH, f"{PATCH_BINS_UNIFORM_TEAM_PATH}/{UNIPARAM_NAME}")
-
-            print("-")
-
-        # Delete the bins temp folder
-        shutil.rmtree(BINS_TEMP_FOLDER_PATH)
+        shutil.copy(socks_no_guard_model_path, ng_socks_fix_path)
 
     faces_folder_path = os.path.join("./patches_contents", faces_foldername)
 
@@ -275,60 +253,6 @@ def contents_from_extracted():
 
         # Move the collars to the Faces cpk folder
         for item in os.listdir(main_dir):
-            shutil.move(os.path.join(main_dir, item), items_folder_path_full)
-
-        # Then delete the main folder
-        shutil.rmtree(main_dir)
-
-
-    # If there's a Portraits folder, move its stuff
-    main_dir = os.path.join(EXTRACTED_PATH, 'Portraits')
-    if os.path.exists(main_dir):
-
-        if not other_message:
-            other_message = True
-
-            print('-')
-            print('- Moving the other stuff')
-
-        # Create a "player" folder if needed
-        items_folder_path_full = os.path.join(PATCHES_CONTENTS_PATH, faces_foldername, 'common/render/symbol/player')
-        if not os.path.exists(items_folder_path_full):
-            os.makedirs(items_folder_path_full)
-
-        # Move the portraits to the Faces cpk folder
-        for item in os.listdir(main_dir):
-            # First delete if it already exists
-            if os.path.exists(os.path.join(items_folder_path_full, item)):
-                os.remove(os.path.join(items_folder_path_full, item))
-
-            shutil.move(os.path.join(main_dir, item), items_folder_path_full)
-
-        # Then delete the main folder
-        shutil.rmtree(main_dir)
-
-
-    # If there's a Logo folder, move its stuff
-    main_dir = os.path.join(EXTRACTED_PATH, 'Logo')
-    if os.path.exists(main_dir):
-
-        if not other_message:
-            other_message = True
-
-            print('-')
-            print('- Moving the other stuff')
-
-        # Create a "flag" folder if needed
-        items_folder_path_full = os.path.join(PATCHES_CONTENTS_PATH, uniform_foldername, 'common/render/symbol/flag')
-        if not os.path.exists(items_folder_path_full):
-            os.makedirs(items_folder_path_full)
-
-        # Move the logos to the Uniform cpk folder
-        for item in os.listdir(main_dir):
-            # First delete if it already exists
-            if os.path.exists(os.path.join(items_folder_path_full, item)):
-                os.remove(os.path.join(items_folder_path_full, item))
-
             shutil.move(os.path.join(main_dir, item), items_folder_path_full)
 
         # Then delete the main folder

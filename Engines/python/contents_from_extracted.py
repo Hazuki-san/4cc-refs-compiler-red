@@ -55,7 +55,7 @@ def contents_from_extracted():
 
 
     # Put RefAppearance in CPK no matter what
-    if not fox_mode and os.path.exists("extracted_exports"):
+    if not fox_mode:
 
         print("-")
         print("- Injecting 4cc referees files (pre-fox)")
